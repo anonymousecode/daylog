@@ -5,7 +5,7 @@
     <div class="bg-white shadow rounded p-4 mb-3 flex justify-between items-center">
         
         <div>
-            <h2 class="text-gray-600 text-sm">{{$diary->day}}</h2>
+            <h2 class="text-gray-600 text-sm">{{ date('d-M-Y', strtotime($diary->day)) }}</h2>
             <h2 class="text-xl font-bold">{{$diary->title}}  </h2>
             <span class="inline-block bg-yellow-400 text-white text-xs px-3 py-1 rounded">{{$diary->tag}}</span>
         </div>
