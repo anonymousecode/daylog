@@ -12,8 +12,15 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    # Node.js dependencies
+    ca-certificates \
+    gnupg \
     && docker-php-ext-install pdo pdo_mysql zip mbstring xml \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js (v18) and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -30,8 +37,11 @@ RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /e
 # Ensure correct permissions (optional but recommended)
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install composer dependencies (verbose output)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist -vvv
+# Install composer dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Install npm dependencies and build assets
+RUN npm install && npm run build
 
 # Expose port 80
 EXPOSE 80
