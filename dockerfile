@@ -1,33 +1,29 @@
-# Use official PHP 8.1 with Apache
+# Use official PHP image with Apache
 FROM php:8.2-apache
 
-# Install system dependencies and PHP extensions needed for Laravel
-RUN apt-get update && apt-get install -y \
-    libonig-dev \
-    libzip-dev \
-    zip unzip git curl \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip
-
-# Enable Apache mod_rewrite for Laravel routing
+# Enable required Apache modules
 RUN a2enmod rewrite
 
-# Copy project files into container
-COPY . /var/www/html
+# Install PHP extensions (adjust as needed)
+RUN docker-php-ext-install pdo pdo_mysql
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /var/www/html
 
-# Install Composer (using multi-stage build for latest Composer)
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copy project files to container
+COPY . /var/www/html
 
-# Install PHP dependencies without dev dependencies and optimize autoloader
-RUN composer install --no-dev --optimize-autoloader
+# Set proper DocumentRoot to /public
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
-# Set permissions for storage and cache directories
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Ensure correct permissions (optional but recommended)
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port 80 (default for Apache)
+# Expose port 80
 EXPOSE 80
 
 # Start Apache in foreground
 CMD ["apache2-foreground"]
+
+# Change DocumentRoot to point to the public folder
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
