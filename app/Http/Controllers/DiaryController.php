@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Diary_note; 
+use App\Models\Diarynote; 
 use Illuminate\Support\Facades\Auth;
 
 class DiaryController extends Controller
@@ -11,7 +11,7 @@ class DiaryController extends Controller
     function create(Request $request){
         $user = $request->user();
 
-        $diary = new Diary_note();
+        $diary = new Diarynote();
         $diary->title = $request->title;
         $diary->content = $request->content;
         $diary->tag = $request->tags;
@@ -34,7 +34,7 @@ class DiaryController extends Controller
             return redirect('login')->with('fail', 'Please log in to view your diaries');
         }
 
-        $diaries = Diary_note::where('email', $user->email)->orderby('day','desc')->paginate(5);
+        $diaries = Diarynote::where('email', $user->email)->orderby('day','desc')->paginate(5);
         return view('dashboard',['diaries'=>$diaries]);
     }
 
@@ -45,7 +45,7 @@ class DiaryController extends Controller
         if(!$user){
             return redirect('login')->with('fail', 'Please log in to edit your diary');
         }
-        $diary = Diary_note::FindOrFail($id);
+        $diary = Diarynote::FindOrFail($id);
         return view('updatediaries', ['diary' => $diary]);      
     }
 
@@ -57,7 +57,7 @@ class DiaryController extends Controller
             return redirect('login')->with('fail', 'Please log in to update your diary');
         }
 
-        $diary = Diary_note::find($id);
+        $diary = Diarynote::find($id);
         if(!$diary){
             return back()->with('fail', 'Diary entry not found');   
         }
@@ -77,7 +77,7 @@ class DiaryController extends Controller
 
         $user =Auth::user();
 
-        $diary = Diary_note::find($id);
+        $diary = Diarynote::find($id);
         if(!$diary){
             return back()->with('fail', 'Diary entry not found');   
         }
@@ -88,7 +88,7 @@ class DiaryController extends Controller
     function delete($id){
         $user = Auth::user();
 
-        $diary = Diary_note::find($id);
+        $diary = Diarynote::find($id);
         $res = $diary->delete();
         if($res){
             return redirect('dashboard')->with('success', 'Diary entry deleted successfully');
