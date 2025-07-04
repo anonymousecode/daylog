@@ -33,8 +33,8 @@
 
             <!-- Metadata -->
             <div class="text-sm text-gray-500 mb-6 space-x-6">
-                <span><strong>Date:</strong> {{$diary->day}}</span>
-                <span><strong>Created:</strong> {{$diary->timestamp}}</span>
+                <span><strong>Date:</strong>{{ date('d-M-Y', strtotime($diary->day)) }}</span>
+                <span><strong>Created:</strong> {{ date('d-M-Y H:i', strtotime($diary->timestamp)) }}</span>
             </div>
 
             <!-- Tags -->
