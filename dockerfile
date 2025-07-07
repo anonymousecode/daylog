@@ -1,42 +1,34 @@
-# Use official PHP image with Apache
+# Use official PHP with Apache
 FROM php:8.2-apache
 
-# Install system dependencies for Laravel + npm
+# Install system dependencies (php extensions, node, npm)
 RUN apt-get update && apt-get install -y \
     git unzip curl libzip-dev zip npm \
-    && docker-php-ext-install zip pdo_mysql
+    && docker-php-ext-install zip pdo_mysql \
+    && a2enmod rewrite
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
-
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project files
 COPY . .
 
-# Install Composer globally
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Create a non-root user and switch to it
-RUN useradd -m appuser
+# Create non-root user
+RUN useradd -m appuser && chown -R appuser /var/www/html
 USER appuser
 
-# Install PHP dependencies via Composer as non-root
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+# Install composer dependencies WITHOUT scripts (avoid artisan errors)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-# Install node modules and build assets
-RUN npm install
-RUN npm run build
-
-# Switch back to root to adjust permissions and configure Apache
+# Switch back to root for npm install/build and permissions
 USER root
 
-# Give proper permissions
+RUN npm install && npm run build
+
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port 80
-EXPOSE 80
+# Now run artisan package discover as www-data user (to fix discovery)
+USER www-data
+RUN php artisan package:discover
 
-# Start Apache in the foreground
+# Expose and start Apache
+EXPOSE 80
 CMD ["apache2-foreground"]
