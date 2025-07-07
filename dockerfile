@@ -1,50 +1,23 @@
-# Use official PHP image with Apache
-FROM php:8.2-apache
-
-# Enable required Apache modules
-RUN a2enmod rewrite
-
-# Install system dependencies and PHP extensions required by Laravel
-RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    unzip \
-    git \
-    curl \
-    # Node.js dependencies
-    ca-certificates \
-    gnupg \
-    && docker-php-ext-install pdo pdo_mysql zip mbstring xml \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js (v18) and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
-
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Set working directory inside container
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy project files to container
+# Copy project files
 COPY . /var/www/html
 
-# Set proper DocumentRoot to /public
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Ensure permissions BEFORE install
+RUN chown -R www-data:www-data /var/www/html
 
-# Ensure correct permissions (optional but recommended)
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Install composer dependencies
+# Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Install npm dependencies and build assets
+# Install npm and build assets
 RUN npm install && npm run build
 
-# Expose port 80
+# Apache DocumentRoot
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
+# Expose port
 EXPOSE 80
 
-# Start Apache in foreground
+# Start Apache
 CMD ["apache2-foreground"]
