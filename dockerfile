@@ -1,43 +1,42 @@
-# Use official PHP with Apache
+# Use official PHP image with Apache
 FROM php:8.2-apache
 
-# Enable Apache Rewrite
-RUN a2enmod rewrite
-
-# Install system dependencies and PHP extensions
+# Install system dependencies for Laravel + npm
 RUN apt-get update && apt-get install -y \
-    libzip-dev libonig-dev libxml2-dev unzip git curl \
-    ca-certificates gnupg \
-    && docker-php-ext-install pdo pdo_mysql zip mbstring xml \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    git unzip curl libzip-dev zip npm \
+    && docker-php-ext-install zip pdo_mysql
 
-# Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
-
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Copy project files
-COPY . /var/www/html
+COPY . .
 
-# Correct Apache DocumentRoot to Laravel public folder
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Install Composer globally
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html
+# Create a non-root user and switch to it
+RUN useradd -m appuser
+USER appuser
 
-# Install PHP dependencies
+# Install PHP dependencies via Composer as non-root
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Install JS dependencies and build assets
-RUN npm install && npm run build
+# Install node modules and build assets
+RUN npm install
+RUN npm run build
 
-# Expose port
+# Switch back to root to adjust permissions and configure Apache
+USER root
+
+# Give proper permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Expose port 80
 EXPOSE 80
 
-# Start Apache in foreground
+# Start Apache in the foreground
 CMD ["apache2-foreground"]
