@@ -13,11 +13,11 @@ class AuthController extends Controller
         $user = new User;
         $user->name = $request->input('name');
         $user->email = $request->input('email');
-        $user->password = $request->input('password');
+        $user->password = bcrypt($request->input('password'));
         $result = $user->save();
 
         if($result){
-            return back()->with('success', 'Registered successfully');
+            return redirect('/')->with('success', 'Registered successfully');
         } else {
             return back()->with('fail', 'Something went wrong, try again');
         }
