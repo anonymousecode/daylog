@@ -6,7 +6,7 @@
     <title>DayLog</title>
     @vite('resources/css/app.css')
 </head>
-<body>
+<body style="background-color: #FFF0E6;">
     <div class="min-h-screen flex items-center justify-center  px-4">
   <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
     <h1 class="text-3xl font-semibold mb-6 text-center">DayLog</h1>
