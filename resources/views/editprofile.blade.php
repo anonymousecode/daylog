@@ -25,7 +25,7 @@
             <h2 class="text-center text-2xl font-bold mb-6">Update Profile</h2>
             {{-- Profile Picture --}}
             <div class="w-24 h-24 mx-auto mb-4">
-                <img src="{{ asset('storage/'.$user->profile_pic) ?? 'https://via.placeholder.com/150' }}" alt="Profile Picture" class="w-full h-full rounded-full object-cover border-2 border-gray-300">
+                <img src="{{  $user->profile_pic ? $user->profile_pic : 'https://via.placeholder.com/150' }}" alt="Profile Picture" class="w-full h-full rounded-full object-cover border-2 border-gray-300">
             </div>
 
             {{-- Update Profile Form --}}

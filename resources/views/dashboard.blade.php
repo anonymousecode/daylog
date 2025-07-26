@@ -32,7 +32,7 @@
 
                 <!-- Profile Picture -->
                 <div class="w-24 h-24 mx-auto mb-4">
-                    <img src="{{ $user->profile_pic ? asset('storage/'.$user->profile_pic) : 'https://via.placeholder.com/150' }}" alt="Profile Picture" class="w-full h-full rounded-full object-cover border-2 border-gray-300">
+                    <img src="{{  $user->profile_pic ? $user->profile_pic : 'https://via.placeholder.com/150' }}" }}" alt="Profile Picture" class="w-full h-full rounded-full object-cover border-2 border-gray-300">
                 </div>
 
                 <!-- Name, Email, Bio -->
